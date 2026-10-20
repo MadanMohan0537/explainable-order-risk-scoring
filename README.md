@@ -32,7 +32,7 @@ Analysts, product managers, and engineers exploring how transparent risk rules b
 
 - Submit transaction attributes and inspect contributing risk factors.
 - Edit the inputs and submit again to compare cases such as a high amount, a new account, an unusual hour, a long distance, or failed attempts.
-- Run the Worker locally with a Wrangler release that accepts this project's compatibility date, or publish it with `npm run deploy` to your own Cloudflare account.
+- Run the Worker locally with a Wrangler release that accepts this project's compatibility date, or deploy it to your own Cloudflare account with `npx wrangler deploy`.
 - Explore supervised classification separately with the training script.
 
 ## Quick start
@@ -47,7 +47,7 @@ npm run check
 npx --yes wrangler@4.151.3 dev
 ```
 
-`npm run check` runs `node --check` on `worker/index.js`. `package.json` lists no runtime dependencies. Its `dev` and `deploy` scripts pin Wrangler 4.120.0 and call it through `npx` (the first run asks you to confirm that install).
+`npm run check` runs `node --check` on `worker/index.js`. `package.json` lists no runtime dependencies. Its `dev` script pins Wrangler 4.120.0 and calls it through `npx` (the first run asks you to confirm that install). Publishing is covered under Deployment and does not use that pin.
 
 `npm run dev` does not stay up. `compatibility_date` in `wrangler.jsonc` is `2026-08-13`, and Wrangler 4.120.0's local runtime only accepts dates through `2026-08-08`. `npx --yes wrangler@4.151.3 dev` reads the same config and serves http://localhost:8787. This README leaves `wrangler.jsonc` and the Worker name `fraudshield` as they are.
 
@@ -96,12 +96,29 @@ Run that from the repository root. The script reads `Fraudulent_E-Commerce_Trans
 | [templates/analyze.html](templates/analyze.html) | Data-analyzer page left in the tree. The Worker publishes only `public/` |
 | [training/train_model.py](training/train_model.py) | Offline classification experiment |
 | [requirements-training.txt](requirements-training.txt) | Python training dependencies |
-| [package.json](package.json) | `check`, `dev`, and `deploy` scripts |
+| [package.json](package.json) | `check` and local `dev` scripts |
 | [wrangler.jsonc](wrangler.jsonc) | Worker deployment configuration (`name` is `fraudshield`) |
 
 ## Deployment
 
-Review `wrangler.jsonc`, authenticate to Cloudflare, and run `npm run deploy`. That script uses Wrangler 4.120.0. A `deploy --dry-run` with that version bundles this Worker; publishing still uses the Cloudflare account you authenticate, under the Worker name `fraudshield`. The demo linked above stays at `https://e-commerce-fraud-detection.madanmohanlearning.workers.dev/`.
+Deploy on Cloudflare Workers from the repository root. Authenticate with the Wrangler CLI, then run:
+
+```bash
+npx wrangler deploy
+```
+
+That command reads [wrangler.jsonc](wrangler.jsonc) as it is:
+
+| Setting | Value |
+| --- | --- |
+| Worker name | `fraudshield` (leave this unchanged) |
+| Entry point | `worker/index.js` |
+| `compatibility_date` | `2026-08-13` |
+| Assets | directory `./public`, binding `ASSETS`; `/predict` and `/health` run in the Worker before assets |
+| Other bindings | none |
+| Secrets, vars, routes, or custom domains | none |
+
+`compatibility_date` is a Workers runtime date in that file, not a Wrangler package version. Keep the Worker name `fraudshield`. The config does not attach https://e-commerce-fraud-detection.madanmohanlearning.workers.dev/; that address is the existing demo, and this deploy does not rename it. Observability is enabled.
 
 ## How I would measure it next (not yet done)
 
