@@ -32,22 +32,24 @@ Analysts, product managers, and engineers exploring how transparent risk rules b
 
 - Submit transaction attributes and inspect contributing risk factors.
 - Edit the inputs and submit again to compare cases such as a high amount, a new account, an unusual hour, a long distance, or failed attempts.
-- Run the Worker locally or deploy it to your own Cloudflare account.
+- Run the Worker locally with a Wrangler release that accepts this project's compatibility date, or publish it with `npm run deploy` to your own Cloudflare account.
 - Explore supervised classification separately with the training script.
 
 ## Quick start
 
-Use Node.js 22 or newer and npm. The scripts pin Wrangler 4.120.0, which requires that Node version.
+Use Node.js 22 or newer and npm. Wrangler 4.120.0 and 4.151.3 both require that Node version.
 
 ```bash
 git clone https://github.com/MadanMohan0537/explainable-order-risk-scoring.git
 cd explainable-order-risk-scoring
 npm install
 npm run check
-npm run dev
+npx --yes wrangler@4.151.3 dev
 ```
 
-Open the URL printed by Wrangler, normally http://localhost:8787. The scripts invoke Wrangler 4.120.0 through `npx`; a global install is not required. `package.json` lists no runtime dependencies, so `npx` fetches Wrangler when you run `dev` or `deploy`.
+`npm run check` runs `node --check` on `worker/index.js`. `package.json` lists no runtime dependencies. Its `dev` and `deploy` scripts pin Wrangler 4.120.0 and call it through `npx` (the first run asks you to confirm that install).
+
+`npm run dev` does not stay up. `compatibility_date` in `wrangler.jsonc` is `2026-08-13`, and Wrangler 4.120.0's local runtime only accepts dates through `2026-08-08`. `npx --yes wrangler@4.151.3 dev` reads the same config and serves http://localhost:8787. This README leaves `wrangler.jsonc` and the Worker name `fraudshield` as they are.
 
 ## API
 
@@ -99,7 +101,7 @@ Run that from the repository root. The script reads `Fraudulent_E-Commerce_Trans
 
 ## Deployment
 
-Review `wrangler.jsonc`, authenticate to Cloudflare, and run `npm run deploy`. That publishes the Worker named `fraudshield` to the account you authenticate. The demo linked above stays at `https://e-commerce-fraud-detection.madanmohanlearning.workers.dev/`.
+Review `wrangler.jsonc`, authenticate to Cloudflare, and run `npm run deploy`. That script uses Wrangler 4.120.0. A `deploy --dry-run` with that version bundles this Worker; publishing still uses the Cloudflare account you authenticate, under the Worker name `fraudshield`. The demo linked above stays at `https://e-commerce-fraud-detection.madanmohanlearning.workers.dev/`.
 
 ## How I would measure it next (not yet done)
 
